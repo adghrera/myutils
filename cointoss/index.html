@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Coin Toss</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='resources/main.css'>
+    <script src='resources/main.js'></script>
+</head>
+<body>
+    <h1>Coin Toss Experiment</h1>
+    <div style="width: 310px; display: inline-block;">
+        <div>
+            <img id="coin" src="resources/coin_front.png" />
+        </div>
+        <div style="width: 100%; text-align: center;">
+            <button id="flip" onclick="startFlip()" style="margin-top: 20px; background-color: #55f; color: #fff; font-weight: 800;font-size: 2em;">Flip</button>
+            <input type="checkbox" name="soundon" id="soundon">Play Sound</input>
+        </div>
+    </div>
+<script>
+    const coinFront = 'resources/coin_front.png';
+    const coinBack = 'resources/coin_back.png';
+    const coinAudio = 'resources/coin_drop.mp3';
+    const frameDelay = 20; // milliseconds
+    const frameAngleDelta = 30; // degrees
+
+    let angle = 0;
+    let origWidth = 0;
+    let origHeight = 0;
+    let width = 0;
+    let front = true;
+    let numberOfFlips = 5;
+    let audio;
+    let flip;
+
+    function flipCoin() {
+        setTimeout(() => {
+            let coin = document.getElementById('coin');
+
+            if (origWidth == 0) {
+                origWidth = coin.clientWidth;
+                origHeight = coin.clientHeight;
+            }
+
+            width = Math.trunc((Math.abs(90 - angle % 180)) * origWidth / 90.0);
+            let margin = (origWidth - width)/2;
+
+            if ((angle - 90) % 180 == 0) {
+                if (front) {
+                    coin.setAttribute('src', coinBack);
+                    front = false;
+                } else {
+                    coin.setAttribute('src', coinFront);
+                    front = true;
+                }
+            }
+            // console.log(width, origWidth, angle);
+            coin.setAttribute('width', width);
+            coin.setAttribute('height', origHeight);
+            coin.style.marginLeft = margin+'px';
+            angle += frameAngleDelta;
+
+            if (angle <= numberOfFlips*180) {
+                flipCoin();
+            } else {
+                if (audio) {
+                    audio.pause();
+                }
+                if (flip) {
+                    flip.disabled = false;
+                }
+            }
+        }, frameDelay);
+    }
+
+    function startFlip() {
+        let coin = document.getElementById('coin');
+        coin.setAttribute('src', coinFront);
+
+        let playsound = document.getElementById('soundon');
+        console.log('Play sound', playsound.checked);
+
+        flip = document.getElementById('flip');
+        flip.disabled = true;
+
+        if (playsound.checked) {
+            if (!audio) {
+                audio = new Audio(coinAudio);
+            }
+            audio.currentTime = 0;
+            audio.loop = true;
+            audio.play();
+        } else {
+            audio = null;
+        }
+
+        front = true;
+        angle = 0;
+        let r = Math.random();
+        numberOfFlips = 5; // TAILS
+        if (r >= 0.50) {
+            numberOfFlips = 6; // HEADS
+        }
+        flipCoin();
+    }
+
+    window.onload = (event) => {
+        let coin = document.getElementById('coin');
+        console.log(coin, coin.src);
+    };
+</script>
+</body>
+</html>
